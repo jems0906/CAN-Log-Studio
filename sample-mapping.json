@@ -1,0 +1,28 @@
+{
+  "messages": {
+    "0x100": {
+      "name": "Vehicle Speed",
+      "signals": [
+        { "name": "speed_kph", "start_byte": 0, "length": 2, "factor": 0.1, "offset": 0, "unit": "kph" }
+      ]
+    },
+    "0x101": {
+      "name": "Steering Angle",
+      "signals": [
+        { "name": "steering_deg", "start_byte": 0, "length": 2, "factor": 0.1, "offset": 0, "unit": "deg", "signed": true }
+      ]
+    },
+    "0x102": {
+      "name": "Brake Pressure",
+      "signals": [
+        { "name": "brake_pct", "start_byte": 0, "length": 1, "factor": 0.5, "offset": 0, "unit": "%" }
+      ]
+    },
+    "0x103": {
+      "name": "Throttle Position",
+      "signals": [
+        { "name": "throttle_pct", "start_byte": 0, "length": 1, "factor": 0.5, "offset": 0, "unit": "%" }
+      ]
+    }
+  }
+}
