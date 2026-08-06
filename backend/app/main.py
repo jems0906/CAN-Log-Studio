@@ -258,7 +258,7 @@ def serve_frontend_root() -> FileResponse:
 
 @app.get("/{full_path:path}", include_in_schema=False)
 def serve_frontend_asset_or_spa(full_path: str) -> FileResponse:
-    if full_path.startswith("api"):
+    if full_path == "api" or full_path.startswith("api/"):
         raise HTTPException(status_code=404, detail="Not found")
     if FRONTEND_DIR is None:
         raise HTTPException(status_code=404, detail="Frontend assets not found")
