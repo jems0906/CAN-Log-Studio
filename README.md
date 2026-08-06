@@ -88,3 +88,20 @@ The parser accepts a few common shapes:
 ## Deployment notes
 
 For Railway, point the backend at `DATABASE_URL` and build the frontend separately or serve it from a static host. The backend is already structured to work with PostgreSQL when the environment variable is provided.
+
+## Railway deployment (single service)
+
+This repository can run as one Railway service using the root `Dockerfile`.
+The container builds the frontend, copies it into the backend, and serves both UI and API from one process.
+
+1. Push this repo to GitHub.
+2. In Railway, create a new project from the GitHub repo.
+3. Railway will detect the root `Dockerfile` and build automatically.
+4. Set `DATABASE_URL` in Railway if you want persistent PostgreSQL storage.
+5. Deploy.
+
+After deploy:
+
+- UI is served at `/`
+- API is served at `/api/*`
+- Health check endpoint is `/api/health`

@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlalchemy import desc
 from sqlalchemy.orm import selectinload
 
@@ -15,6 +16,20 @@ from .schemas import FrameOut, SessionDetail, SessionSummary
 from .services.analytics import build_grouped_frames, build_signal_series, find_anomalies
 from .services.can_parser import FrameRecord, parse_uploaded_log
 from .services.dbc_mapper import DEFAULT_MAPPING, decode_frame, load_mapping_text
+
+
+def _find_frontend_dir() -> Path | None:
+    candidates = [
+        Path(__file__).resolve().parent / "static",
+        Path(__file__).resolve().parents[2] / "frontend" / "dist",
+    ]
+    for candidate in candidates:
+        if (candidate / "index.html").exists():
+            return candidate
+    return None
+
+
+FRONTEND_DIR = _find_frontend_dir()
 
 app = FastAPI(title="CAN Log Studio API", version="1.0.0")
 app.add_middleware(
@@ -232,3 +247,34 @@ def json_dump(payload: dict[str, Any]) -> str:
     import json
 
     return json.dumps(payload, indent=2, sort_keys=True)
+
+
+@app.get("/", include_in_schema=False)
+def serve_frontend_root() -> FileResponse:
+    if FRONTEND_DIR is None:
+        raise HTTPException(status_code=404, detail="Frontend assets not found")
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def serve_frontend_asset_or_spa(full_path: str) -> FileResponse:
+    if full_path.startswith("api"):
+        raise HTTPException(status_code=404, detail="Not found")
+    if FRONTEND_DIR is None:
+        raise HTTPException(status_code=404, detail="Frontend assets not found")
+
+    base = FRONTEND_DIR.resolve()
+    requested = (base / full_path).resolve()
+
+    try:
+        requested.relative_to(base)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="Not found") from error
+
+    if requested.is_file():
+        return FileResponse(requested)
+
+    if "." in full_path:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    return FileResponse(base / "index.html")
